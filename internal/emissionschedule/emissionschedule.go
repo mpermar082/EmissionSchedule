@@ -11,15 +11,21 @@ import (
 
 // App represents the main application
 type App struct {
+    // Flag to enable verbose logging
     Verbose       bool
+    // Counter for processed data
     ProcessedCount int
 }
 
 // ProcessResult represents processing results
 type ProcessResult struct {
+    // Flag indicating successful processing
     Success   bool        `json:"success"`
+    // Human-readable message
     Message   string      `json:"message"`
+    // Optional processed data
     Data      interface{} `json:"data,omitempty"`
+    // Timestamp of processing
     Timestamp time.Time   `json:"timestamp"`
 }
 
@@ -33,11 +39,12 @@ func NewApp(verbose bool) *App {
 
 // Run executes the main application logic
 func (a *App) Run(inputFile, outputFile string) error {
+    // Log application start
     if a.Verbose {
         log.Println("Starting EmissionSchedule processing...")
     }
 
-    // Read input data
+    // Read input data from file or use default test data
     var inputData string
     if inputFile != "" {
         if a.Verbose {
@@ -61,7 +68,7 @@ func (a *App) Run(inputFile, outputFile string) error {
         return fmt.Errorf("processing failed: %w", err)
     }
 
-    // Generate output
+    // Marshal result to JSON
     output, err := json.MarshalIndent(result, "", "  ")
     if err != nil {
         return fmt.Errorf("failed to marshal result: %w", err)
@@ -77,43 +84,9 @@ func (a *App) Run(inputFile, outputFile string) error {
             return fmt.Errorf("failed to write output file: %w", err)
         }
     } else {
+        // Print output to console if no output file specified
         fmt.Println(string(output))
     }
 
-    if a.Verbose {
-        log.Printf("Processing complete. Total processed: %d", a.ProcessedCount)
-    }
-
     return nil
-}
-
-// Process handles the core data processing
-func (a *App) Process(data string) (*ProcessResult, error) {
-    if a.Verbose {
-        log.Printf("Processing data of length: %d", len(data))
-    }
-
-    // Simulate processing
-    a.ProcessedCount++
-
-    result := &ProcessResult{
-        Success:   true,
-        Message:   fmt.Sprintf("Successfully processed item #%d", a.ProcessedCount),
-        Data: map[string]interface{}{
-            "length":       len(data),
-            "processed_at": time.Now().Format(time.RFC3339),
-            "item_number":  a.ProcessedCount,
-        },
-        Timestamp: time.Now(),
-    }
-
-    return result, nil
-}
-
-// GetStats returns application statistics
-func (a *App) GetStats() map[string]interface{} {
-    return map[string]interface{}{
-        "processed_count": a.ProcessedCount,
-        "verbose":        a.Verbose,
-    }
 }
